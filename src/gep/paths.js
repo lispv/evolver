@@ -1,3 +1,4 @@
+// paths.js - Handles directory and path resolution
 const path = require('path');
 const fs = require('fs');
 
