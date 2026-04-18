@@ -192,7 +192,7 @@ describe('getGepAssetsDir', () => {
 describe('getWorkspaceRoot', () => {
   let saved = {};
   let tmpDir;
-  const envKeys = ['OPENCLAW_WORKSPACE', 'EVOLVER_REPO_ROOT'];
+  const envKeys = ['OPENCLAW_WORKSPACE', 'EVOLVER_REPO_ROOT', 'MEMORY_DIR', 'EVOLVER_LOGS_DIR', 'SKILLS_DIR'];
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-test-'));

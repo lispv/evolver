@@ -54,9 +54,11 @@ describe('consumeHubEvents / getHubEvents', () => {
     global.fetch = async (url, opts) => {
       if (url.includes('/a2a/events/poll')) {
         pollCalled = true;
-        return { json: async () => ({ events: fakeEvents }) };
+        return { ok: true, text: async () => JSON.stringify({ events: fakeEvents }), json: async () => ({ events: fakeEvents }) };
       }
       return {
+        ok: true,
+        text: async () => JSON.stringify({ status: 'ok', has_pending_events: true }),
         json: async () => ({ status: 'ok', has_pending_events: true }),
       };
     };
@@ -88,9 +90,9 @@ describe('consumeHubEvents / getHubEvents', () => {
     global.fetch = async (url) => {
       if (url.includes('/a2a/events/poll')) {
         pollCalled = true;
-        return { json: async () => ({ events: [] }) };
+        return { ok: true, text: async () => JSON.stringify({ events: [] }), json: async () => ({ events: [] }) };
       }
-      return { json: async () => ({ status: 'ok' }) };
+      return { ok: true, text: async () => JSON.stringify({ status: 'ok' }), json: async () => ({ status: 'ok' }) };
     };
 
     const logPath = path.join(tmpDir, 'evolver_loop.log');
@@ -106,9 +108,9 @@ describe('consumeHubEvents / getHubEvents', () => {
     const fakeEvents = [{ type: 'council_invite', payload: {} }];
     global.fetch = async (url) => {
       if (url.includes('/a2a/events/poll')) {
-        return { json: async () => ({ payload: { events: fakeEvents } }) };
+        return { ok: true, text: async () => JSON.stringify({ payload: { events: fakeEvents } }), json: async () => ({ payload: { events: fakeEvents } }) };
       }
-      return { json: async () => ({ status: 'ok', has_pending_events: true }) };
+      return { ok: true, text: async () => JSON.stringify({ status: 'ok', has_pending_events: true }), json: async () => ({ status: 'ok', has_pending_events: true }) };
     };
 
     const logPath = path.join(tmpDir, 'evolver_loop.log');

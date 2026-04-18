@@ -1,14 +1,26 @@
-const { describe, it, beforeEach, afterEach } = require('node:test');
+const { describe, it, beforeEach, afterEach, before, after } = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('fs');
+const path = require('path');
 
 const savedEnv = {};
 const envKeys = ['EVOLVE_BRIDGE', 'OPENCLAW_WORKSPACE'];
+const dotEnvPath = path.join(__dirname, '..', '.env');
+const dotEnvBak = path.join(__dirname, '..', '.env.bak');
 
 function freshRequire(modulePath) {
   const resolved = require.resolve(modulePath);
   delete require.cache[resolved];
   return require(resolved);
 }
+
+before(() => {
+  if (fs.existsSync(dotEnvPath)) fs.renameSync(dotEnvPath, dotEnvBak);
+});
+
+after(() => {
+  if (fs.existsSync(dotEnvBak)) fs.renameSync(dotEnvBak, dotEnvPath);
+});
 
 beforeEach(() => {
   for (const k of envKeys) { savedEnv[k] = process.env[k]; delete process.env[k]; }
@@ -99,7 +111,7 @@ describe('determineBridgeEnabled -- black-box via child_process', () => {
     delete cleanEnv.EVOLVE_BRIDGE;
     delete cleanEnv.OPENCLAW_WORKSPACE;
     return execFileSync(process.execPath, ['-e', script], {
-      cwd: require('path').resolve(__dirname, '..'),
+      cwd: path.resolve(__dirname, '..'),
       encoding: 'utf8',
       timeout: 10000,
       env: cleanEnv,
