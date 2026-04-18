@@ -32,7 +32,35 @@
       "validation": [
         "node scripts/validate-modules.js ./src/evolve ./src/gep/solidify ./src/gep/policyCheck ./src/gep/selector ./src/gep/memoryGraph ./src/gep/assetStore",
         "node scripts/validate-suite.js"
-      ]
+      ],
+      "learning_history": [
+        {
+          "at": "2026-04-18T06:22:56.558Z",
+          "outcome": "success",
+          "mode": "none",
+          "reason_class": "unknown",
+          "retryable": false,
+          "learning_signals": [
+            "user_feature_request",
+            "tool_bypass",
+            "high_failure_ratio",
+            "force_innovation_after_repair_loop",
+            "retry_error_context",
+            "retry_cmd:node scripts/validate-suite.js",
+            "retry_stderr:FAIL: test suite exited with code 1\nt exist on successful heartbeat (0.275542ms)\n  AssertionError [ERR_ASSERTION]: heart"
+          ]
+        }
+      ],
+      "epigenetic_marks": [
+        {
+          "context": "darwin/arm64/v25.9.0",
+          "boost": 0.1,
+          "reason": "success_in_environment",
+          "created_at": "2026-04-18T06:22:56.559Z"
+        }
+      ],
+      "schema_version": "1.6.0",
+      "asset_id": "sha256:4d5ff24c6548016922cc596f2375ab15e07839af31c74db409db374f2d4e290d"
     },
     {
       "type": "Gene",
@@ -103,8 +131,220 @@
       "validation": [
         "node scripts/validate-modules.js ./src/evolve ./src/gep/solidify ./src/gep/policyCheck ./src/gep/mutation ./src/gep/personality",
         "node scripts/validate-suite.js"
+      ],
+      "learning_history": [
+        {
+          "at": "2026-04-18T06:36:44.416Z",
+          "outcome": "success",
+          "mode": "none",
+          "reason_class": "unknown",
+          "retryable": false,
+          "learning_signals": [
+            "user_feature_request",
+            "tool_bypass"
+          ]
+        },
+        {
+          "at": "2026-04-18T06:41:59.764Z",
+          "outcome": "success",
+          "mode": "none",
+          "reason_class": "unknown",
+          "retryable": false,
+          "learning_signals": [
+            "user_feature_request",
+            "tool_bypass"
+          ]
+        }
+      ],
+      "epigenetic_marks": [
+        {
+          "context": "darwin/arm64/v25.9.0",
+          "boost": 0.15000000000000002,
+          "reason": "reinforced_by_success",
+          "created_at": "2026-04-18T06:41:59.764Z"
+        }
+      ],
+      "schema_version": "1.6.0",
+      "asset_id": "sha256:6c0167e78a6e516978f10bf1fb104475785ed3826483df6281ff9450d8b42191"
+    },
+    {
+      "type": "Gene",
+      "schema_version": "1.6.0",
+      "id": "gene_auto_8e4d820e",
+      "category": "optimize",
+      "signals_match": [
+        "memory_missing",
+        "user_missing",
+        "session_logs_missing"
+      ],
+      "preconditions": [
+        "signals_key == memory_missing|session_logs_missing|user_missing"
+      ],
+      "strategy": [
+        "Extract structured signals from logs and user instructions",
+        "Select an existing Gene by signals match (no improvisation)",
+        "Estimate blast radius (files, lines) before editing and record it",
+        "Apply smallest reversible patch",
+        "Validate using declared validation steps; rollback on failure",
+        "Solidify knowledge: append EvolutionEvent, update Gene/Capsule store"
+      ],
+      "constraints": {
+        "max_files": 12,
+        "forbidden_paths": [
+          ".git",
+          "node_modules",
+          "skills/feishu-evolver-wrapper",
+          "skills/feishu-common",
+          "skills/feishu-post",
+          "skills/feishu-card",
+          "skills/feishu-doc",
+          "skills/skill-tools",
+          "skills/git-sync"
+        ]
+      },
+      "validation": [
+        "node scripts/validate-modules.js ./src/gep/solidify ./src/gep/policyCheck ./src/gep/assetStore",
+        "node scripts/validate-suite.js"
+      ],
+      "epigenetic_marks": [
+        {
+          "context": "darwin/arm64/v25.9.0",
+          "boost": -0.35,
+          "reason": "suppressed_by_failure",
+          "created_at": "2026-04-18T05:30:42.597Z"
+        }
+      ],
+      "asset_id": "sha256:da3c6a041549b06986cec3b53a581d71b15bda6b1c7af53eb8aa3a0264bffdad",
+      "learning_history": [
+        {
+          "at": "2026-04-18T05:03:04.904Z",
+          "outcome": "failed",
+          "mode": "soft",
+          "reason_class": "validation",
+          "retryable": true,
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "area:orchestration",
+            "area:memory",
+            "risk:validation"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:04:30.913Z",
+          "outcome": "success",
+          "mode": "none",
+          "reason_class": "unknown",
+          "retryable": false,
+          "learning_signals": [
+            "memory_missing",
+            "user_missing",
+            "session_logs_missing"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:11:06.287Z",
+          "outcome": "failed",
+          "mode": "hard",
+          "reason_class": "protocol",
+          "retryable": false,
+          "learning_signals": [
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "area:memory"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:11:21.473Z",
+          "outcome": "failed",
+          "mode": "hard",
+          "reason_class": "constraint",
+          "retryable": false,
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "area:orchestration",
+            "area:memory",
+            "risk:validation"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:30:42.596Z",
+          "outcome": "failed",
+          "mode": "hard",
+          "reason_class": "constraint",
+          "retryable": false,
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "area:orchestration",
+            "area:memory",
+            "risk:validation"
+          ]
+        }
+      ],
+      "anti_patterns": [
+        {
+          "at": "2026-04-18T05:03:04.904Z",
+          "mode": "soft",
+          "reason_class": "validation",
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "area:orchestration",
+            "area:memory",
+            "risk:validation"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:11:06.288Z",
+          "mode": "hard",
+          "reason_class": "protocol",
+          "learning_signals": [
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "area:memory"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:11:21.473Z",
+          "mode": "hard",
+          "reason_class": "constraint",
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "area:orchestration",
+            "area:memory",
+            "risk:validation"
+          ]
+        },
+        {
+          "at": "2026-04-18T05:30:42.597Z",
+          "mode": "hard",
+          "reason_class": "constraint",
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "area:orchestration",
+            "area:memory",
+            "risk:validation"
+          ]
+        }
       ]
     }
   ]
 }
-

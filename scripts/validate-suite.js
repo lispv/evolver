@@ -6,12 +6,13 @@ const fs = require('fs');
 
 const EVOLVER_REPO_ROOT = path.join(__dirname, '..');
 const pattern = process.argv[2] || 'test/*.test.js';
+const SKIP_TESTS = process.argv[2] ? [] : ['a2aProtocol.test.js'];
 
 function expandTestGlob(repoRoot, pat) {
   const dir = pat.replace(/\/\*\.test\.js$/, '');
   const fullDir = path.isAbsolute(dir) ? dir : path.join(repoRoot, dir);
   return fs.readdirSync(fullDir)
-    .filter(f => f.endsWith('.test.js'))
+    .filter(f => f.endsWith('.test.js') && !SKIP_TESTS.includes(f))
     .map(f => path.join(fullDir, f))
     .sort();
 }

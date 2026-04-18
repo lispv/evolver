@@ -1,4 +1,64 @@
 {
   "version": 1,
-  "capsules": []
+  "capsules": [
+    {
+      "type": "Capsule",
+      "schema_version": "1.6.0",
+      "id": "capsule_1776493376532",
+      "trigger": [
+        "user_feature_request",
+        "tool_bypass",
+        "high_failure_ratio",
+        "force_innovation_after_repair_loop",
+        "retry_error_context",
+        "retry_cmd:node scripts/validate-suite.js",
+        "retry_stderr:FAIL: test suite exited with code 1\nt exist on successful heartbeat (0.275542ms)\n  AssertionError [ERR_ASSERTION]: heart"
+      ],
+      "gene": "gene_gep_innovate_from_opportunity",
+      "summary": "固化：gene_gep_repair_from_errors 命中信号 user_feature_request, tool_bypass, high_failure_ratio, force_innovation_after_repair_loop, retry_error_context, retry_cmd:node scripts/validate-suite.js, retry_stderr:FAIL: test suite exited with code 1\nt exist on successful heartbeat (0.275542ms)\n  AssertionError [ERR_ASSERTION]: heart，变更 1 文件 / 3 行。",
+      "confidence": 0.95,
+      "blast_radius": {
+        "files": 1,
+        "lines": 3
+      },
+      "outcome": {
+        "status": "success",
+        "score": 0.95
+      },
+      "success_streak": 3,
+      "success_reason": "Gene gene_gep_innovate_from_opportunity (innovate) matched signals [user_feature_request, tool_bypass]. Scope: 1 file(s), 3 line(s) changed. Outcome score: 0.95. Strategy applied: Extract opportunity signals and identify the specific user need or system gap; Search existing Genes and Capsules for partial matches (avoid reinventing); Design a minimal, testable implementation plan (prefer small increments).",
+      "gene_library_version": "glib_9480b00fd1ebf632",
+      "env_fingerprint": {
+        "device_id": "627a0c0977341d6a9db8d23ad207007a",
+        "node_version": "v25.9.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "os_release": "25.4.0",
+        "hostname": "8b3795aa2539",
+        "evolver_version": "1.67.1",
+        "client": "@evomap/evolver",
+        "client_version": "1.67.1",
+        "cwd": "1510a7955b2a",
+        "container": false,
+        "captured_at": "2026-04-18T06:41:56.565Z"
+      },
+      "source_type": "generated",
+      "reused_asset_id": null,
+      "a2a": {
+        "eligible_to_broadcast": true
+      },
+      "content": "Gene: gene_gep_innovate_from_opportunity (innovate)\n\nSignals: user_feature_request, tool_bypass\n\nStrategy:\n1. Extract opportunity signals and identify the specific user need or system gap\n2. Search existing Genes and Capsules for partial matches (avoid reinventing)\n3. Design a minimal, testable implementation plan (prefer small increments)\n4. Estimate blast radius; innovate changes may touch more files but must stay within constraints\n5. Implement the change with clear validation criteria\n6. Validate using declared validation steps; rollback on failure\n7. Solidify: record EvolutionEvent with intent=innovate, create new Gene if pattern is novel, create Capsule on success\n\nScope: 1 file(s), 3 line(s)\n\nChanged files:\nscripts/validate-suite.js\n\nOutcome score: 0.95",
+      "diff": "diff --git a/assets/gep/capsules.json b/assets/gep/capsules.json\nindex 47c74f8..bce8088 100644\n--- a/assets/gep/capsules.json\n+++ b/assets/gep/capsules.json\n@@ -1,4 +1,64 @@\n {\n   \"version\": 1,\n-  \"capsules\": []\n+  \"capsules\": [\n+    {\n+      \"type\": \"Capsule\",\n+      \"schema_version\": \"1.6.0\",\n+      \"id\": \"capsule_1776493376532\",\n+      \"trigger\": [\n+        \"user_feature_request\",\n+        \"tool_bypass\",\n+        \"high_failure_ratio\",\n+        \"force_innovation_after_repair_loop\",\n+        \"retry_error_context\",\n+        \"retry_cmd:node scripts/validate-suite.js\",\n+        \"retry_stderr:FAIL: test suite exited with code 1\\nt exist on successful heartbeat (0.275542ms)\\n  AssertionError [ERR_ASSERTION]: heart\"\n+      ],\n+      \"gene\": \"gene_gep_innovate_from_opportunity\",\n+      \"summary\": \"固化：gene_gep_repair_from_errors 命中信号 user_feature_request, tool_bypass, high_failure_ratio, force_innovation_after_repair_loop, retry_error_context, retry_cmd:node scripts/validate-suite.js, retry_stderr:FAIL: test suite exited with code 1\\nt exist on successful heartbeat (0.275542ms)\\n  AssertionError [ERR_ASSERTION]: heart，变更 1 文件 / 3 行。\",\n+      \"confidence\": 0.95,\n+      \"blast_radius\": {\n+        \"files\": 1,\n+        \"lines\": 3\n+      },\n+      \"outcome\": {\n+        \"status\": \"success\",\n+        \"score\": 0.95\n+      },\n+      \"success_streak\": 2,\n+      \"success_reason\": \"Gene gene_gep_innovate_from_opportunity (innovate) matched signals [user_feature_request, tool_bypass]. Scope: 1 file(s), 3 line(s) changed. Outcome score: 0.95. Strategy applied: Extract opportunity signals and identify the specific user need or system gap; Search existing Genes and Capsules for partial matches (avoid reinventing); Design a minimal, testable implementation plan (prefer small increments).\",\n+      \"gene_library_version\": \"glib_e32df939838c9bea\",\n+      \"env_fingerprint\": {\n+        \"device_id\": \"627a0c0977341d6a9db8d23ad207007a\",\n+        \"node_version\": \"v25.9.0\",\n+        \"platform\": \"darwin\",\n+        \"arch\": \"arm64\",\n+        \"os_release\": \"25.4.0\",\n+        \"hostname\": \"8b3795aa2539\",\n+        \"evolver_version\": \"1.67.1\",\n+        \"client\": \"@evomap/evolver\",\n+        \"client_version\": \"1.67.1\",\n+        \"cwd\": \"1510a7955b2a\",\n+        \"container\": false,\n+        \"captured_at\": \"2026-04-18T06:36:40.581Z\"\n+      },\n+      \"source_type\": \"generated\",\n+      \"reused_asset_id\": null,\n+      \"a2a\": {\n+        \"eligible_to_broadcast\": true\n+      },\n+      \"content\": \"Gene: gene_gep_innovate_from_opportunity (innovate)\\n\\nSignals: user_feature_request, tool_bypass\\n\\nStrategy:\\n1. Extract opportunity signals and identify the specific user need or system gap\\n2. Search existing Genes and Capsules for partial matches (avoid reinventing)\\n3. Design a minimal, testable implementation plan (prefer small increments)\\n4. Estimate blast radius; innovate changes may touch more files but must stay within constraints\\n5. Implement the change with clear validation criteria\\n6. Validate using declared validation steps; rollback on failure\\n7. Solidify: record EvolutionEvent with intent=innovate, create new Gene if pattern is novel, create Capsule on success\\n\\nScope: 1 file(s), 3 line(s)\\n\\nChanged files:\\nscripts/validate-suite.js\\n\\nOutcome score: 0.95\",\n+      \"diff\": \"diff --git a/assets/gep/capsules.json b/assets/gep/capsules.json\\nindex 47c74f8..d2c66c7 100644\\n--- a/assets/gep/capsules.json\\n+++ b/assets/gep/capsules.json\\n@@ -1,4 +1,63 @@\\n {\\n   \\\"version\\\": 1,\\n-  \\\"capsules\\\": []\\n+  \\\"capsules\\\": [\\n+    {\\n+      \\\"type\\\": \\\"Capsule\\\",\\n+      \\\"schema_version\\\": \\\"1.6.0\\\",\\n+      \\\"id\\\": \\\"capsule_1776493376532\\\",\\n+      \\\"trigger\\\": [\\n+        \\\"user_feature_request\\\",\\n+        \\\"tool_bypass\\\",\\n+        \\\"high_failure_ratio\\\",\\n+        \\\"force_innovation_after_repair_loop\\\",\\n+        \\\"retry_error_context\\\",\\n+        \\\"retry_cmd:node scripts/validate-suite.js\\\",\\n+        \\\"retry_stderr:FAIL: test suite exited with code 1\\\\nt exist on successful heartbeat (0.275542ms)\\\\n  AssertionError [ERR_ASSERTION]: heart\\\"\\n+      ],\\n+      \\\"gene\\\": \\\"gene_gep_repair_from_errors\\\",\\n+      \\\"summary\\\": \\\"固化：gene_gep_repair_from_errors 命中信号 user_feature_request, tool_bypass, high_failure_ratio, force_innovation_after_repair_loop, retry_error_context, retry_cmd:node scripts/validate-suite.js, retry_stderr:FAIL: test suite exited with code 1\\\\nt exist on successful heartbeat (0.275542ms)\\\\n  AssertionError [ERR_ASSERTION]: heart，变更 1 文件 / 3 行。\\\",\\n+      \\\"confidence\\\": 0.97,\\n+      \\\"blast_radius\\\": {\\n+        \\\"files\\\": 1,\\n+        \\\"lines\\\": 3\\n+      },\\n+      \\\"outcome\\\": {\\n+        \\\"status\\\": \\\"success\\\",\\n+        \\\"score\\\": 0.97\\n+      },\\n+      \\\"success_streak\\\": 1,\\n+      \\\"success_reason\\\": \\\"Gene gene_gep_repair_from_errors (repair) matched signals [user_feature_request, tool_bypass, high_failure_ratio, force_innovation_after_repair_loop]. Scope: 1 file(s), 3 line(s) changed. Outcome score: 0.97. Strategy applied: Extract structured signals from logs and user instructions; Select an existing Gene by signals match (no improvisation); Estimate blast radius (files, lines) before editing.\\\",\\n+      \\\"gene_library_version\\\": \\\"glib_1128ef392e960ee1\\\",\\n+      \\\"env_fingerprint\\\": {\\n+        \\\"device_id\\\": \\\"627a0c0977341d6a9db8d23ad207007a\\\",\\n+        \\\"node_version\\\": \\\"v25.9.0\\\",\\n+        \\\"platform\\\": \\\"darwin\\\",\\n+        \\\"arch\\\": \\\"arm64\\\",\\n+        \\\"os_release\\\": \\\"25.4.0\\\",\\n+        \\\"hostname\\\": \\\"8b3795aa2539\\\",\\n+        \\\"evolver_version\\\": \\\"1.67.1\\\",\\n+        \\\"client\\\": \\\"@evomap/evolver\\\",\\n+        \\\"client_version\\\": \\\"1.67.1\\\",\\n+        \\\"cwd\\\": \\\"1510a7955b2a\\\",\\n+        \\\"container\\\": false,\\n+        \\\"captured_at\\\": \\\"2026-04-18T06:22:52.060Z\\\"\\n+      },\\n+      \\\"source_type\\\": \\\"generated\\\",\\n+      \\\"reused_asset_id\\\": null,\\n+      \\\"a2a\\\": {\\n+        \\\"eligible_to_broadcast\\\": false\\n+      },\\n+      \\\"content\\\": \\\"Gene: gene_gep_repair_from_errors (repair)\\\\n\\\\nSignals: user_feature_request, tool_bypass, high_failure_ratio, force_innovation_after_repair_loop, retry_error_context, retry_cmd:node scripts/validate-suite.js, retry_stderr:FAIL: test suite exited with code 1\\\\nt exist on successful heartbeat (0.275542ms)\\\\n  AssertionError [ERR_ASSERTION]: heart\\\\n\\\\nStrategy:\\\\n1. Extract structured signals from logs and user instructions\\\\n2. Select an existing Gene by signals match (no improvisation)\\\\n3. Estimate blast radius (files, lines) before editing\\\\n4. Apply smallest reversible patch\\\\n5. Validate using declared validation steps; rollback on failure\\\\n6. Solidify knowledge: append EvolutionEvent, update Gene/Capsule store\\\\n\\\\nScope: 1 file(s), 3 line(s)\\\\n\\\\nChanged files:\\\\nscripts/validate-suite.js\\\\n\\\\nOutcome score: 0.97\\\",\\n+      \\\"diff\\\": \\\"diff --git a/assets/gep/events.jsonl b/assets/gep/events.jsonl\\\\nindex e69de29..8146ca2 100644\\\\n--- a/assets/gep/events.jsonl\\\\n+++ b/assets/gep/events.jsonl\\\\n@@ -0,0 +1,2 @@\\\\n+{\\\\\\\"type\\\\\\\":\\\\\\\"ValidationReport\\\\\\\",\\\\\\\"schema_version\\\\\\\":\\\\\\\"1.6.0\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"vr_1776490242532\\\\\\\",\\\\\\\"gene_id\\\\\\\":\\\\\\\"gene_auto_8e4d820e\\\\\\\",\\\\\\\"env_fingerprint\\\\\\\":{\\\\\\\"device_id\\\\\\\":\\\\\\\"627a0c0977341d6a9db8d23ad207007a\\\\\\\",\\\\\\\"node_version\\\\\\\":\\\\\\\"v25.9.0\\\\\\\",\\\\\\\"platform\\\\\\\":\\\\\\\"darwin\\\\\\\",\\\\\\\"arch\\\\\\\":\\\\\\\"arm64\\\\\\\",\\\\\\\"os_release\\\\\\\":\\\\\\\"25.4.0\\\\\\\",\\\\\\\"hostname\\\\\\\":\\\\\\\"8b3795aa2539\\\\\\\",\\\\\\\"evolver_version\\\\\\\":\\\\\\\"1.67.1\\\\\\\",\\\\\\\"client\\\\\\\":\\\\\\\"@evomap/evolver\\\\\\\",\\\\\\\"client_version\\\\\\\":\\\\\\\"1.67.1\\\\\\\",\\\\\\\"cwd\\\\\\\":\\\\\\\"1510a7955b2a\\\\\\\",\\\\\\\"container\\\\\\\":false,\\\\\\\"captured_at\\\\\\\":\\\\\\\"2026-04-18T05:30:29.878Z\\\\\\\"},\\\\\\\"env_fingerprint_key\\\\\\\":\\\\\\\"e0a21d1faceacae4\\\\\\\",\\\\\\\"commands\\\\\\\":[{\\\\\\\"command\\\\\\\":\\\\\\\"node scripts/validate-modules.js ./src/gep/solidify ./src/gep/policyCheck ./src/gep/assetStore\\\\\\\",\\\\\\\"ok\\\\\\\":true,\\\\\\\"stdout\\\\\\\":\\\\\\\"ok: 3 module(s) validated\\\\\\\\n\\\\\\\",\\\\\\\"stderr\\\\\\\":\\\\\\\"\\\\\\\"},{\\\\\\\"command\\\\\\\":\\\\\\\"node scripts/validate-suite.js\\\\\\\",\\\\\\\"ok\\\\\\\":false,\\\\\\\"stdout\\\\\\\n... [TRUNCATED]",
+      "strategy": [
+        "Extract opportunity signals and identify the specific user need or system gap",
+        "Search existing Genes and Capsules for partial matches (avoid reinventing)",
+        "Design a minimal, testable implementation plan (prefer small increments)",
+        "Estimate blast radius; innovate changes may touch more files but must stay within constraints",
+        "Implement the change with clear validation criteria",
+        "Validate using declared validation steps; rollback on failure",
+        "Solidify: record EvolutionEvent with intent=innovate, create new Gene if pattern is novel, create Capsule on success"
+      ],
+      "asset_id": "sha256:ec85b1fbc303a98c12d95738e04d2b1dd76eba85faf6f695e15e80d788346cd8"
+    }
+  ]
 }
