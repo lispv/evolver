@@ -1,0 +1,9 @@
+{
+  "name": "gateway-timeout-fallback",
+  "version": "1.0.0",
+  "description": "Provides LLM request timeout and fallback switching for OpenClaw gateway",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  }
+}

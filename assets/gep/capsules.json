@@ -59,6 +59,60 @@
         "Solidify: record EvolutionEvent with intent=innovate, create new Gene if pattern is novel, create Capsule on success"
       ],
       "asset_id": "sha256:ec85b1fbc303a98c12d95738e04d2b1dd76eba85faf6f695e15e80d788346cd8"
+    },
+    {
+      "type": "Capsule",
+      "schema_version": "1.6.0",
+      "id": "capsule_1776745891235",
+      "trigger": [
+        "repeated_tool_usage:exec",
+        "recurring_error",
+        "hub_search_miss_with_problem"
+      ],
+      "gene": "gene_gep_repair_from_errors",
+      "summary": "Add gateway-timeout-fallback skill for automatic LLM timeout detection and fallback model switching",
+      "confidence": 0.95,
+      "blast_radius": {
+        "files": 3,
+        "lines": 87
+      },
+      "outcome": {
+        "status": "success",
+        "score": 0.95
+      },
+      "success_streak": 1,
+      "success_reason": "Gene gene_gep_repair_from_errors (repair) matched signals [repeated_tool_usage:exec, recurring_error, hub_search_miss_with_problem]. Scope: 3 file(s), 87 line(s) changed. Outcome score: 0.95. Strategy applied: Extract structured signals from logs and user instructions; Select an existing Gene by signals match (no improvisation); Estimate blast radius (files, lines) before editing.",
+      "gene_library_version": "glib_0145e6d9febe47f1",
+      "env_fingerprint": {
+        "device_id": "627a0c0977341d6a9db8d23ad207007a",
+        "node_version": "v25.9.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "os_release": "25.4.0",
+        "hostname": "8b3795aa2539",
+        "evolver_version": "1.67.1",
+        "client": "@evomap/evolver",
+        "client_version": "1.67.1",
+        "cwd": "1510a7955b2a",
+        "container": false,
+        "captured_at": "2026-04-21T04:31:27.874Z"
+      },
+      "source_type": "generated",
+      "reused_asset_id": null,
+      "a2a": {
+        "eligible_to_broadcast": false
+      },
+      "content": "Intent: innovate\n\nGene: gene_gep_repair_from_errors (repair)\n\nSignals: repeated_tool_usage:exec, recurring_error, hub_search_miss_with_problem\n\nStrategy:\n1. Extract structured signals from logs and user instructions\n2. Select an existing Gene by signals match (no improvisation)\n3. Estimate blast radius (files, lines) before editing\n4. Apply smallest reversible patch\n5. Validate using declared validation steps; rollback on failure\n6. Solidify knowledge: append EvolutionEvent, update Gene/Capsule store\n\nScope: 3 file(s), 87 line(s)\n\nChanged files:\nskills/gateway-timeout-fallback/index.js\nskills/gateway-timeout-fallback/package.json\nskills/gateway-timeout-fallback/test.js\n\nOutcome score: 0.95",
+      "diff": "diff --git a/assets/gep/events.jsonl b/assets/gep/events.jsonl\nindex e639ce2..2221d7d 100644\n--- a/assets/gep/events.jsonl\n+++ b/assets/gep/events.jsonl\n@@ -6,3 +6,5 @@\n {\"type\":\"EvolutionEvent\",\"schema_version\":\"1.6.0\",\"id\":\"evt_1776494204384\",\"parent\":\"evt_1776493376532\",\"intent\":\"innovate\",\"signals\":[\"user_feature_request\",\"tool_bypass\"],\"genes_used\":[\"gene_gep_innovate_from_opportunity\"],\"mutation_id\":\"mut_1776494066505\",\"personality_state\":{\"type\":\"PersonalityState\",\"rigor\":0.7,\"creativity\":0.35,\"verbosity\":0.25,\"risk_tolerance\":0.4,\"obedience\":0.9},\"blast_radius\":{\"files\":1,\"lines\":3},\"outcome\":{\"status\":\"success\",\"score\":0.95},\"capsule_id\":\"capsule_1776493376532\",\"source_type\":\"generated\",\"reused_asset_id\":null,\"gene_library_version\":\"glib_e32df939838c9bea\",\"env_fingerprint\":{\"device_id\":\"627a0c0977341d6a9db8d23ad207007a\",\"node_version\":\"v25.9.0\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"os_release\":\"25.4.0\",\"hostname\":\"8b3795aa2539\",\"evolver_version\":\"1.67.1\",\"client\":\"@evomap/evolver\",\"client_version\":\"1.67.1\",\"cwd\":\"1510a7955b2a\",\"container\":false,\"captured_at\":\"2026-04-18T06:36:40.581Z\"},\"validation_report_id\":\"vr_1776494204383\",\"meta\":{\"at\":\"2026-04-18T06:36:44.384Z\",\"signal_key\":\"tool_bypass|user_feature_request\",\"selector\":{\"selected\":\"gene_gep_innovate_from_opportunity\",\"reason\":[\"signals match gene.signals_match\",\"capsule trigger matches signals\",\"signals: user_feature_request, tool_bypass\",\"drift_intensity: 0.500\",\"selection_path: score_ranked\"],\"alternatives\":[\"gene_gep_repair_from_errors\"],\"selectionPath\":\"score_ranked\",\"memoryUsed\":false},\"blast_radius_estimate\":{\"files\":25,\"lines\":2000},\"mutation\":{\"type\":\"Mutation\",\"id\":\"mut_1776494066505\",\"category\":\"innovate\",\"trigger_signals\":[\"user_feature_request\",\"tool_bypass\"],\"target\":\"gene:gene_gep_innovate_from_opportunity\",\"expected_effect\":\"explore new strategy combinations to escape local optimum\",\"risk_level\":\"medium\"},\"personality\":{\"key\":\"rigor=0.7|creativity=0.3|verbosity=0.3|risk_tolerance=0.4|obedience=0.9\",\"known\":true,\"mutations\":[]},\"gene\":{\"id\":\"gene_gep_innovate_from_opportunity\",\"created\":false,\"reason\":\"selected_gene_id_present\"},\"constraints_ok\":true,\"constraint_violations\":[],\"constraint_warnings\":[null],\"blast_severity\":\"within_limit\",\"blast_breakdown\":null,\"blast_estimate_comparison\":{\"estimateFiles\":25,\"actualFiles\":1,\"ratio\":0.04,\"drifted\":true,\"message\":null},\"validation_ok\":true,\"validation\":[{\"cmd\":\"node scripts/validate-modules.js ./src/evolve ./src/gep/solidify ./src/gep/policyCheck ./src/gep/mutation ./src/gep/personality\",\"ok\":true},{\"cmd\":\"node scripts/validate-suite.js\",\"ok\":true}],\"validation_report\":{\"type\":\"ValidationReport\",\"schema_version\":\"1.6.0\",\"id\":\"vr_1776494204383\",\"gene_id\":\"gene_gep_innovate_from_opportunity\",\"env_fingerprint\":{\"device_id\":\"627a0c0977341d6a9db8d23ad207007a\",\"node_version\":\"v25.9.0\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"os_release\":\"25.4.0\",\"hostname\":\"8b3795aa2539\",\"evolver_version\":\"1.67.1\",\"client\":\"@evomap/evolver\",\"client_version\":\"1.67.1\",\"cwd\":\"1510a7955b2a\",\"container\":false,\"captured_at\":\"2026-04-18T06:36:40.581Z\"},\"env_fingerprint_key\":\"e0a21d1faceacae4\",\"commands\":[{\"command\":\"node scripts/validate-modules.js ./src/evolve ./src/gep/solidify ./src/gep/policyCheck ./src/gep/mutation ./src/gep/personality\",\"ok\":true,\"stdout\":\"ok: 5 module(s) validated\\n\",\"stderr\":\"\"},{\"command\":\"node scripts/validate-suite.js\",\"ok\":true,\"stdout\":\"ok: 671 test(s) passed, 0 failed\\n\",\"stderr\":\"\"}],\"overall_ok\":true,\"duration_ms\":3589,\"created_at\":\"2026-04-18T06:36:44.383Z\",\"asset_id\":\"sha256:09eafc4c9f821ff260d5ca08b18dc3506342cf18b268fe57d5e0f3bea1ce590b\"},\"canary_ok\":true,\"canary_skipped\":false,\"protocol_ok\":true,\"protocol_violations\":[],\"memory_graph\":\"/Users/jekyll/.openclaw/workspace/memory/evolution/memory_graph.jsonl\",\"soft_failure\":null,\"process_scores\":{\"signal_quality\":0.6,\"gene_selection\":0.9,\"mutation_quality\":0.5,\"blast_control\":1,\"constraint_compliance\":1,\"validation_pass_rate\":1,\"protocol_compliance\":1,\"canary_health\":1,\"composite\":0.95,\"weights\":{\"signal\":0.05,\"selection\":0.1,\"mutation\":0.05,\"blast\":0.15,\"constraint\":0.25,\"validation\":0.25,\"protocol\":0.1,\"canary\":0.05}}},\"execution_trace\":{\"gene_id\":\"gene_gep_innovate_from_opportunity\",\"mutation_category\":\"innovate\",\"signals_matched\":[\"user_feature_request\",\"tool_bypass\"],\"outcome\":\"success\",\"files_changed_count\":1,\"lines_added\":2,\"lines_removed\":1,\"validation_result\":\"pass\",\"blast_radius\":\"low\",\"created_at\":\"2026-04-18T06:36:44.385Z\"},\"asset_id\":\"sha256:6bc8f8a022c41bb9f37dc2e37aa1e890a6bd2cd2da3a65e4a721ee560b349c3d\"}\n {\"type\":\"ValidationReport\",\"schema_version\":\"1.6.0\",\"id\":\"vr_1776494519739\",\"gene_id\":\"gene_gep_innovate_from_opportunity\",\"env_fingerprint\":{\"device_id\":\"627a0c0977341d6a9db8d23ad207007a\",\"node_version\":\"v25.9.0\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"os_release\":\"25.4.0\",\"hostname\":\"8b3795aa2539\",\"evolver_version\":\"1.67.1\",\"client\":\"@evomap/evolver\",\"client_version\":\"1.67.1\",\"cwd\":\"1510a7955b2a\",\"container\":false,\"captured_at\":\"2026-04-18T06:41:56.565Z\"},\"env_fingerprint_key\":\"e0a21d1faceacae4\",\"commands\":[{\"command\":\"node scripts/validate-modules.js ./src/evolve ./src/gep/solidify ./src/gep/policyCheck ./src/gep/mutation ./src/gep/personality\",\"ok\":true,\"stdout\":\"ok: 5 module(s) validated\\n\",\"stderr\":\"\"},{\"command\":\"node scripts/validate-suite.js\",\"ok\":true,\"stdout\":\"ok: 671 test(s) passed, 0 failed\\n\",\"stderr\":\"\"}],\"overall_ok\":true,\"duration_ms\":2952,\"created_at\":\"2026-04-18T06:41:59.739Z\",\"asset_id\":\"sha256:54b68b3a630c5fbf5c3c4416a54e153969c61702a744c4a60556a49c0e8a4a8d\"}\n {\"type\":\"EvolutionEvent\",\"schema_version\":\"1.6.0\",\"id\":\"evt_1776494519739\",\"parent\":\"evt_1776493376532\",\"intent\":\"innovate\",\"signals\":[\"user_feature_request\",\"tool_bypass\"],\"genes_used\":[\"gene_gep_innovate_from_opportunity\"],\"mutation_id\":\"mut_1776494066505\",\"personality_state\":{\"type\":\"PersonalityState\",\"rigor\":0.7,\"creativity\":0.35,\"verbosity\":0.25,\"risk_tolerance\":0.4,\"obedience\":0.9},\"blast_radius\":{\"files\":1,\"lines\":3},\"outcome\":{\"status\":\"success\",\"score\":0.95},\"capsule_id\":\"capsule_1776493376532\",\"source_type\":\"generated\",\"reused_asset_id\":null,\"gene_library_version\":\"glib_9480b00fd1ebf632\",\"env_fingerprint\":{\"device_id\":\"627a0c0977341d6a9db8d23ad207007a\",\"node_version\":\"v25.9.0\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"os_release\":\"25.4.0\",\"hostname\":\"8b3795aa2539\",\"evolver_version\":\"1.67.1\",\"client\":\"@evomap/evolver\",\"client_version\":\"1.67.1\",\"cwd\":\"1510a7955b2a\",\"container\":false,\"captured_at\":\"2026-04-18T06:41:56.565Z\"},\"validation_report_id\":\"vr_1776494519739\",\"meta\":{\"at\":\"2026-04-18T06:41:59.739Z\",\"signal_key\":\"tool_bypass|user_feature_request\",\"selector\":{\"selected\":\"gene_gep_innovate_from_opportunity\",\"reason\":[\"signals match gene.signals_match\",\"capsule trigger matches signals\",\"signals: user_feature_request, tool_bypass\",\"drift_intensity: 0.500\",\"selection_path: score_ranked\"],\"alternatives\":[\"gene_gep_repair_from_errors\"],\"selectionPath\":\"score_ranked\",\"memoryUsed\":false},\"blast_radius_estimate\":{\"files\":25,\"lines\":2000},\"mutation\":{\"type\":\"Mutation\",\"id\":\"mut_1776494066505\",\"category\":\"innovate\",\"trigger_signals\":[\"user_feature_request\",\"tool_bypass\"],\"target\":\"gene:gene_gep_innovate_from_opportunity\",\"expected_effect\":\"explore new strategy combinations to escape local optimum\",\"risk_level\":\"medium\"},\"personality\":{\"key\":\"rigor=0.7|creativity=0.3|verbosity=0.3|risk_tolerance=0.4|obedience=0.9\",\"known\":true,\"mutations\":[]},\"gene\":{\"id\":\"gene_gep_innovate_from_opportunity\",\"created\":false,\"reason\":\"selected_gene_id_present\"},\"constraints_ok\":true,\"constraint_violations\":[],\"constraint_warnings\":[null],\"blast_severity\":\"within_limit\",\"blast_breakdown\":null,\"blast_estimate_comparison\":{\"estimateFiles\":25,\"actualFiles\":1,\"ratio\":0.04,\"drifted\":true,\"message\":null},\"validation_ok\":true,\"validation\":[{\"cmd\":\"node scripts/validate-modules.js ./src/evolve ./src/gep/solidify ./src/gep/policyCheck ./src/gep/mutation ./src/gep/personality\",\"ok\":true},{\"cmd\":\"node scripts/validate-suite\n... [TRUNCATED]",
+      "strategy": [
+        "Extract structured signals from logs and user instructions",
+        "Select an existing Gene by signals match (no improvisation)",
+        "Estimate blast radius (files, lines) before editing",
+        "Apply smallest reversible patch",
+        "Validate using declared validation steps; rollback on failure",
+        "Solidify knowledge: append EvolutionEvent, update Gene/Capsule store"
+      ],
+      "asset_id": "sha256:0002c94c8c9b1bf78fcd9cc20aafd3e6de9e3dea9aee27c72ec05c06fa02cd6d"
     }
   ]
 }

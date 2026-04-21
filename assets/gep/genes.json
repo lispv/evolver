@@ -49,18 +49,77 @@
             "retry_cmd:node scripts/validate-suite.js",
             "retry_stderr:FAIL: test suite exited with code 1\nt exist on successful heartbeat (0.275542ms)\n  AssertionError [ERR_ASSERTION]: heart"
           ]
+        },
+        {
+          "at": "2026-04-21T04:29:37.750Z",
+          "outcome": "success",
+          "mode": "none",
+          "reason_class": "unknown",
+          "retryable": false,
+          "learning_signals": [
+            "repeated_tool_usage:exec",
+            "recurring_error",
+            "hub_search_miss_with_problem"
+          ]
+        },
+        {
+          "at": "2026-04-21T04:30:57.805Z",
+          "outcome": "failed",
+          "mode": "hard",
+          "reason_class": "constraint",
+          "retryable": false,
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "problem:stagnation",
+            "action:innovate",
+            "area:orchestration",
+            "risk:validation"
+          ]
+        },
+        {
+          "at": "2026-04-21T04:31:31.262Z",
+          "outcome": "success",
+          "mode": "none",
+          "reason_class": "unknown",
+          "retryable": false,
+          "learning_signals": [
+            "repeated_tool_usage:exec",
+            "recurring_error",
+            "hub_search_miss_with_problem"
+          ]
         }
       ],
       "epigenetic_marks": [
         {
           "context": "darwin/arm64/v25.9.0",
-          "boost": 0.1,
-          "reason": "success_in_environment",
-          "created_at": "2026-04-18T06:22:56.559Z"
+          "boost": 0.10000000000000002,
+          "reason": "reinforced_by_success",
+          "created_at": "2026-04-21T04:31:31.263Z"
         }
       ],
       "schema_version": "1.6.0",
-      "asset_id": "sha256:4d5ff24c6548016922cc596f2375ab15e07839af31c74db409db374f2d4e290d"
+      "asset_id": "sha256:4d5ff24c6548016922cc596f2375ab15e07839af31c74db409db374f2d4e290d",
+      "anti_patterns": [
+        {
+          "at": "2026-04-21T04:30:57.805Z",
+          "mode": "hard",
+          "reason_class": "constraint",
+          "learning_signals": [
+            "problem:reliability",
+            "action:repair",
+            "problem:protocol",
+            "action:optimize",
+            "area:prompt",
+            "problem:stagnation",
+            "action:innovate",
+            "area:orchestration"
+          ]
+        }
+      ]
     },
     {
       "type": "Gene",
