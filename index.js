@@ -65,6 +65,15 @@ function parseMs(v, fallback) {
   return fallback;
 }
 
+function getLastSignals(statePath) {
+  try {
+    const st = readJsonSafe(statePath);
+    return (st && st.last_run && Array.isArray(st.last_run.signals)) ? st.last_run.signals : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 // Singleton Guard - prevent multiple evolver daemon instances
 function acquireLock() {
   const lockFile = path.join(__dirname, 'evolver.pid');
@@ -129,12 +138,13 @@ async function main() {
     if (isLoop) {
         // Internal daemon loop (no wrapper required).
         if (!acquireLock()) process.exit(0);
-        process.on('exit', () => {
+        function shutdown() {
           releaseLock();
           try { require('./src/gep/a2aProtocol').stopEventStream(); } catch (e) {}
-        });
-        process.on('SIGINT', () => { releaseLock(); try { require('./src/gep/a2aProtocol').stopEventStream(); } catch (e) {} process.exit(); });
-        process.on('SIGTERM', () => { releaseLock(); try { require('./src/gep/a2aProtocol').stopEventStream(); } catch (e) {} process.exit(); });
+        }
+        process.on('exit', shutdown);
+        process.on('SIGINT', () => { shutdown(); process.exit(); });
+        process.on('SIGTERM', () => { shutdown(); process.exit(); });
         process.on('uncaughtException', (err) => {
           console.error('[FATAL] Uncaught exception:', err && err.stack ? err.stack : String(err));
           releaseLock();
@@ -157,7 +167,7 @@ async function main() {
         }
         console.log(`Loop mode enabled (internal daemon, bridge=${process.env.EVOLVE_BRIDGE}, verbose=${isVerbose}).`);
 
-        const { getEvolutionDir } = require('./src/gep/paths');
+        const { getEvolutionDir, getEvolverLogPath } = require('./src/gep/paths');
         const solidifyStatePath = path.join(getEvolutionDir(), 'evolution_solidify_state.json');
 
         const minSleepMs = parseMs(process.env.EVOLVER_MIN_SLEEP_MS, 2000);
@@ -196,6 +206,18 @@ async function main() {
           console.warn('[Heartbeat] Failed to start: ' + (e.message || e));
         }
 
+        // Validator daemon: independent timer that fetches and executes
+        // validation tasks regardless of the main evolve loop's idle gating.
+        // Honors EVOLVER_VALIDATOR_ENABLED and the persisted feature flag.
+        try {
+          const { startValidatorDaemon } = require('./src/gep/validator');
+          if (startValidatorDaemon()) {
+            console.log('[ValidatorDaemon] started.');
+          }
+        } catch (vdErr) {
+          console.warn('[ValidatorDaemon] failed to start: ' + (vdErr && vdErr.message || vdErr));
+        }
+
         // ATP: auto-start merchant agent if enabled
         try {
           const { defaultHandler, merchantAgent } = require('./src/atp');
@@ -216,6 +238,11 @@ async function main() {
         } catch (atpInitErr) {
           console.warn('[ATP] Auto-init failed: ' + (atpInitErr && atpInitErr.message || atpInitErr));
         }
+
+        // Hoist module refs used inside the loop to avoid repeated module lookups per cycle
+        const idleScheduler = require('./src/gep/idleScheduler');
+        const { shouldDistillFromFailures: shouldDF, autoDistillFromFailures: autoDF } = require('./src/gep/skillDistiller');
+        const { tryExplore } = require('./src/gep/explore');
 
         let currentSleepMs = minSleepMs;
         let cycleCount = 0;
@@ -263,26 +290,24 @@ async function main() {
           // operations (distillation, reflection) during detected idle windows.
           let omlsMultiplier = 1;
           try {
-            const { getScheduleRecommendation } = require('./src/gep/idleScheduler');
-            const schedule = getScheduleRecommendation();
+            const schedule = idleScheduler.getScheduleRecommendation();
             if (schedule.enabled && schedule.sleep_multiplier > 0) {
               omlsMultiplier = schedule.sleep_multiplier;
               if (schedule.should_distill) {
                 try {
-                  const { shouldDistillFromFailures: shouldDF, autoDistillFromFailures: autoDF } = require('./src/gep/skillDistiller');
                   if (shouldDF()) {
                     const dfResult = autoDF();
                     if (dfResult && dfResult.ok) {
                       console.log('[OMLS] Idle-window failure distillation: ' + dfResult.gene.id);
                     }
                   }
-                } catch (e) {}
+                } catch (e) {
+                  if (isVerbose) console.warn('[OMLS] Distill error: ' + (e.message || e));
+                }
               }
               if (schedule.should_explore) {
                 try {
-                  const { tryExplore } = require('./src/gep/explore');
-                  const repoRoot = require('./src/gep/paths').getRepoRoot();
-                  const exploreResult = await tryExplore([], schedule, repoRoot);
+                  const exploreResult = await tryExplore([], schedule, getRepoRoot());
                   if (exploreResult && exploreResult.signals && exploreResult.signals.length > 0) {
                     console.log('[OMLS] Explore discovered ' + exploreResult.signals.length + ' signals: ' + exploreResult.signals.slice(0, 5).join(', '));
                   }
@@ -294,7 +319,9 @@ async function main() {
                 console.log(`[OMLS] idle=${schedule.idle_seconds}s intensity=${schedule.intensity} multiplier=${omlsMultiplier}`);
               }
             }
-          } catch (e) {}
+          } catch (e) {
+            if (isVerbose) console.warn('[OMLS] Scheduler error: ' + (e.message || e));
+          }
 
           // Suicide check (memory leak protection)
           if (suicideEnabled) {
@@ -302,7 +329,6 @@ async function main() {
             if (cycleCount >= maxCyclesPerProcess || memMb > maxRssMb) {
               console.log(`[Daemon] Restarting self (cycles=${cycleCount}, rssMb=${memMb.toFixed(0)})`);
               try {
-                const { getEvolverLogPath } = require('./src/gep/paths');
                 const logFd = fs.openSync(getEvolverLogPath(), 'a');
                 const spawnOpts = {
                   detached: true,
@@ -322,8 +348,7 @@ async function main() {
 
           let saturationMultiplier = 1;
           try {
-            const st1 = readJsonSafe(solidifyStatePath);
-            const lastSignals = st1 && st1.last_run && Array.isArray(st1.last_run.signals) ? st1.last_run.signals : [];
+            const lastSignals = getLastSignals(solidifyStatePath);
             if (lastSignals.includes('force_steady_state')) {
               saturationMultiplier = 4;
               console.log('[Daemon] Saturation detected. Entering steady-state mode (4x sleep).');
@@ -331,14 +356,17 @@ async function main() {
               saturationMultiplier = 2;
               console.log('[Daemon] Approaching saturation. Reducing evolution frequency (2x sleep).');
             }
-          } catch (e) {}
+          } catch (e) {
+            if (isVerbose) console.warn('[Daemon] Saturation check error: ' + (e.message || e));
+          }
 
           // Jitter to avoid lockstep restarts.
           const jitter = Math.floor(Math.random() * 250);
           const totalSleepMs = Math.max(minSleepMs, (currentSleepMs + jitter) * saturationMultiplier * omlsMultiplier);
           if (isVerbose) {
             const memMb = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
-            console.log(`[Verbose] cycle=${cycleCount} ok=${ok} dt=${dt}ms sleep=${totalSleepMs}ms (base=${currentSleepMs} jitter=${jitter} sat=${saturationMultiplier}x) rss=${memMb}MB signals=[${(function() { try { var st = readJsonSafe(solidifyStatePath); return st && st.last_run && Array.isArray(st.last_run.signals) ? st.last_run.signals.join(',') : ''; } catch(e) { return ''; } })()}]`);
+            const signals = getLastSignals(solidifyStatePath).join(',');
+            console.log(`[Verbose] cycle=${cycleCount} ok=${ok} dt=${dt}ms sleep=${totalSleepMs}ms (base=${currentSleepMs} jitter=${jitter} sat=${saturationMultiplier}x) rss=${memMb}MB signals=[${signals}]`);
           }
           await sleepMs(totalSleepMs);
 
@@ -438,11 +466,11 @@ async function main() {
           if (!res || !res.ok) {
             if (res && res.validation && !res.validation.ok) {
               urgentOpts.validationFailed = true;
-              var failedStep = res.validation.results && res.validation.results.find(function (r) { return !r.ok; });
+              const failedStep = res.validation.results && res.validation.results.find(function (r) { return !r.ok; });
               urgentOpts.validationErrors = failedStep ? (failedStep.err || failedStep.cmd || '') : '';
             }
             urgentOpts.geneId = res && res.gene ? res.gene.id : undefined;
-            var evtOutcome = res && res.event && res.event.outcome;
+            const evtOutcome = res && res.event && res.event.outcome;
             if (evtOutcome && typeof evtOutcome.score === 'number' && evtOutcome.score < 0.3) {
               urgentOpts.lowConfidence = true;
               urgentOpts.confidenceScore = evtOutcome.score;
@@ -454,13 +482,13 @@ async function main() {
               urgentOpts.signals = res.event && Array.isArray(res.event.signals) ? res.event.signals : [];
             }
             if (res && res.constraintCheck && Array.isArray(res.constraintCheck.violations)) {
-              var llmRejectV = res.constraintCheck.violations.find(function (v) { return String(v).startsWith('llm_review_rejected'); });
+              const llmRejectV = res.constraintCheck.violations.find(function (v) { return String(v).startsWith('llm_review_rejected'); });
               if (llmRejectV) {
                 urgentOpts.llmReviewRejected = true;
                 urgentOpts.llmReviewReason = String(llmRejectV).replace('llm_review_rejected: ', '');
               }
             }
-            var lr = readJsonSafe(path.join(require('./src/gep/paths').getEvolutionDir(), 'evolution_solidify_state.json'));
+            const lr = readJsonSafe(path.join(require('./src/gep/paths').getEvolutionDir(), 'evolution_solidify_state.json'));
             if (lr && lr.last_run && lr.last_run.active_task_id) {
               urgentOpts.taskCompletionFailed = true;
               urgentOpts.taskTitle = lr.last_run.active_task_title || '';
@@ -473,13 +501,13 @@ async function main() {
           }
 
           if (Object.keys(urgentOpts).length > 0) {
-            var urgentQs = generateUrgentQuestions(urgentOpts);
+            const urgentQs = generateUrgentQuestions(urgentOpts);
             if (urgentQs.length > 0) {
               console.log('[UrgentQ] Generated ' + urgentQs.length + ' urgent question(s) from solidify outcome.');
               try {
-                var fetchRes = await fetchTasks({ questions: urgentQs });
+                const fetchRes = await fetchTasks({ questions: urgentQs });
                 if (fetchRes.questions_created) {
-                  var accepted = fetchRes.questions_created.filter(function (q) { return !q.error; });
+                  const accepted = fetchRes.questions_created.filter(function (q) { return !q.error; });
                   if (accepted.length > 0) {
                     console.log('[UrgentQ] Hub accepted ' + accepted.length + ' urgent question(s) as bounties.');
                   }
@@ -506,6 +534,15 @@ async function main() {
       process.exit(1);
     }
     const responseFilePath = responseFileFlag.slice('--response-file='.length);
+    {
+      const { getRepoRoot } = require('./src/gep/paths');
+      const resolvedResponsePath = path.resolve(responseFilePath);
+      const resolvedRepoRoot = path.resolve(getRepoRoot());
+      if (responseFilePath.includes('..') || !resolvedResponsePath.startsWith(resolvedRepoRoot)) {
+        console.error('[Distill] ERROR: Invalid response-file path "' + responseFilePath + '" - path traversal detected or path is outside the repository.');
+        process.exit(2);
+      }
+    }
     try {
       const responseText = fs.readFileSync(responseFilePath, 'utf8');
       const { completeDistillation } = require('./src/gep/skillDistiller');
@@ -526,6 +563,7 @@ async function main() {
     const { getEvolutionDir, getRepoRoot } = require('./src/gep/paths');
     const { loadGenes } = require('./src/gep/assetStore');
     const { execSync } = require('child_process');
+    const MAX_EXEC_BUFFER = 10 * 1024 * 1024; // 10MB; see GHSA reports / #451
 
     const statePath = path.join(getEvolutionDir(), 'evolution_solidify_state.json');
     const state = readJsonSafe(statePath);
@@ -546,9 +584,9 @@ async function main() {
     const repoRoot = getRepoRoot();
     let diff = '';
     try {
-      const unstaged = execSync('git diff', { cwd: repoRoot, encoding: 'utf8', timeout: 30000 }).trim();
-      const staged = execSync('git diff --cached', { cwd: repoRoot, encoding: 'utf8', timeout: 30000 }).trim();
-      const untracked = execSync('git ls-files --others --exclude-standard', { cwd: repoRoot, encoding: 'utf8', timeout: 10000 }).trim();
+      const unstaged = execSync('git diff', { cwd: repoRoot, encoding: 'utf8', timeout: 30000, maxBuffer: MAX_EXEC_BUFFER }).trim();
+      const staged = execSync('git diff --cached', { cwd: repoRoot, encoding: 'utf8', timeout: 30000, maxBuffer: MAX_EXEC_BUFFER }).trim();
+      const untracked = execSync('git ls-files --others --exclude-standard', { cwd: repoRoot, encoding: 'utf8', timeout: 10000, maxBuffer: MAX_EXEC_BUFFER }).trim();
       if (staged) diff += '=== Staged Changes ===\n' + staged + '\n\n';
       if (unstaged) diff += '=== Unstaged Changes ===\n' + unstaged + '\n\n';
       if (untracked) diff += '=== Untracked Files ===\n' + untracked + '\n';
@@ -630,8 +668,8 @@ async function main() {
     } else if (args.includes('--reject')) {
       console.log('\n[Review] Rejected. Rolling back changes...');
       try {
-        execSync('git checkout -- .', { cwd: repoRoot, encoding: 'utf8', timeout: 30000 });
-        execSync('git clean -fd', { cwd: repoRoot, encoding: 'utf8', timeout: 30000 });
+        execSync('git checkout -- .', { cwd: repoRoot, encoding: 'utf8', timeout: 30000, maxBuffer: MAX_EXEC_BUFFER });
+        execSync('git clean -fd', { cwd: repoRoot, encoding: 'utf8', timeout: 30000, maxBuffer: MAX_EXEC_BUFFER });
         const evolDir = getEvolutionDir();
         const sp = path.join(evolDir, 'evolution_solidify_state.json');
         if (fs.existsSync(sp)) {
@@ -750,9 +788,30 @@ async function main() {
       const data = await resp.json();
       const outFlag = args.find(a => typeof a === 'string' && a.startsWith('--out='));
       const safeId = String(data.skill_id || skillId).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-      const outDir = outFlag
-        ? outFlag.slice('--out='.length)
-        : path.join('.', 'skills', safeId);
+      let outDir;
+      if (outFlag) {
+        const rawOut = outFlag.slice('--out='.length);
+        if (!rawOut || rawOut.trim() === '') {
+          console.error('[fetch] --out= value cannot be empty');
+          process.exit(1);
+        }
+        const resolvedOut = path.resolve(process.cwd(), rawOut);
+        const cwd = path.resolve(process.cwd());
+        const rel = path.relative(cwd, resolvedOut);
+        // Reject paths that escape the current working directory or are
+        // absolute on a different volume/root. This prevents --out=../../etc
+        // from writing outside the project tree.
+        if (rel.startsWith('..') || path.isAbsolute(rel)) {
+          console.error('[fetch] --out= must resolve to a path inside the current working directory');
+          console.error('  Provided:  ' + rawOut);
+          console.error('  Resolved:  ' + resolvedOut);
+          console.error('  Workdir:   ' + cwd);
+          process.exit(1);
+        }
+        outDir = resolvedOut;
+      } else {
+        outDir = path.join('.', 'skills', safeId);
+      }
 
       if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
@@ -888,7 +947,16 @@ async function main() {
     - --action=<action>        (filter: hub_search_hit, hub_search_miss, asset_reuse, asset_reference, asset_publish, asset_publish_skip)
     - --last=<N>               (show last N entries)
     - --since=<ISO_date>       (entries after date)
-    - --json                   (raw JSON output)`);
+    - --json                   (raw JSON output)
+
+Validator role (decentralized validation, default ON since v1.69.0):
+  - EVOLVER_VALIDATOR_ENABLED=0    opt out (env beats persisted flag and default)
+  - EVOLVER_VALIDATOR_ENABLED=1    explicitly opt in
+  - unset                          honor persisted flag from ~/.evomap/feature_flags.json,
+                                   else default ON. The hub may push a flag update via
+                                   the mailbox (event type: feature_flag_update).
+  - Earnings: validators earn credits + reputation from successful consensus.
+    See docs/validator.md for details.`);
   }
 }
 

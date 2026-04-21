@@ -8,7 +8,7 @@
 
 ![Evolver Cover](assets/cover.png)
 
-**[evomap.ai](https://evomap.ai)** | [Documentation](https://evomap.ai/wiki) | [Chinese / 中文文档](README.zh-CN.md) | [GitHub](https://github.com/EvoMap/evolver) | [Releases](https://github.com/EvoMap/evolver/releases)
+**[evomap.ai](https://evomap.ai)** | [Documentation](https://evomap.ai/wiki) | [Chinese / 中文文档](README.zh-CN.md) | [Japanese / 日本語ドキュメント](README.ja-JP.md) | [GitHub](https://github.com/EvoMap/evolver) | [Releases](https://github.com/EvoMap/evolver/releases)
 
 ---
 
@@ -42,7 +42,56 @@ Keywords: protocol-constrained evolution, audit trail, genes and capsules, promp
 - **[Node.js](https://nodejs.org/)** >= 18
 - **[Git](https://git-scm.com/)** -- Required. Evolver uses git for rollback, blast radius calculation, and solidify. Running in a non-git directory will fail with a clear error message.
 
-### Setup
+### Install from npm (recommended)
+
+```bash
+npm install -g @evomap/evolver
+```
+
+This installs the `evolver` CLI globally. Verify with `evolver --help`.
+
+If you hit `EACCES` on Linux/macOS, configure a user-level prefix instead of using `sudo`:
+
+```bash
+npm config set prefix ~/.npm-global
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Platform integration
+
+Evolver integrates with major agent runtimes through `setup-hooks`. Run the command once per platform you want to wire up.
+
+#### Cursor
+
+```bash
+evolver setup-hooks --platform=cursor
+```
+
+Writes `~/.cursor/hooks.json` and installs hook scripts under `~/.cursor/hooks/`. Restart Cursor (or open a new session) to activate. Hooks fire on `sessionStart`, `afterFileEdit`, and `stop`.
+
+#### Claude Code
+
+```bash
+evolver setup-hooks --platform=claude-code
+```
+
+Registers Evolver with Claude Code's hook system via `~/.claude/`. Restart the Claude Code CLI after installation.
+
+#### OpenClaw
+
+OpenClaw interprets the `sessions_spawn(...)` protocol that Evolver emits on stdout, so no hooks are required. Clone Evolver into your OpenClaw workspace and invoke it from within a session:
+
+```bash
+cd <your-openclaw-workspace>
+git clone https://github.com/EvoMap/evolver.git
+cd evolver
+npm install
+```
+
+When Evolver runs inside an OpenClaw session, the host picks up stdout directives (`sessions_spawn(...)`, etc.) and chains follow-up actions automatically.
+
+### Install from source (advanced)
 
 ```bash
 git clone https://github.com/EvoMap/evolver.git
@@ -50,7 +99,11 @@ cd evolver
 npm install
 ```
 
-To connect to the [EvoMap network](https://evomap.ai), create a `.env` file (optional):
+Use this mode if you want to hack on the engine itself, run unreleased builds, or inspect the source tree.
+
+### Connect to the EvoMap network (optional)
+
+To connect to the [EvoMap network](https://evomap.ai), create a `.env` file in your project root:
 
 ```bash
 # Register at https://evomap.ai to get your Node ID
@@ -300,6 +353,25 @@ EVOLVE_REPORT_TOOL=feishu-card
 
 **Method 2: Dynamic Detection**
 The script automatically detects if compatible local skills (like `skills/feishu-card`) exist in your workspace and upgrades its behavior accordingly.
+
+### Validator Role (default ON)
+
+When connected to an [EvoMap Hub](https://evomap.ai), every evolver instance also acts as a **decentralized validator**: it periodically pulls a small batch of validation tasks assigned by the hub, runs the proposer's claimed validation commands inside the existing sandbox, and submits a `ValidationReport` back. Validators that join consensus earn credits and reputation.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EVOLVER_VALIDATOR_ENABLED` | _(unset = ON)_ | `0`/`false`/`off` to opt out; `1`/`true`/`on` to force on. Env always wins over hub-pushed flag and the built-in default. |
+| `EVOLVER_VALIDATOR_DAEMON_INTERVAL_MS` | `60000` | Interval between validator polls when running in `--loop` / `--mad-dog` mode. |
+| `EVOLVER_VALIDATOR_MAX_TASKS_PER_CYCLE` | `2` | Max tasks claimed per poll. |
+| `EVOLVER_VALIDATOR_FETCH_TIMEOUT_MS` | `8000` | Timeout for the per-poll task fetch. |
+
+Persistent flag override: when the env is unset, the runtime reads `~/.evomap/feature_flags.json`. The hub may push `feature_flag_update` events through the existing mailbox channel to flip this on for legacy installs after upgrade.
+
+To opt out permanently:
+
+```bash
+EVOLVER_VALIDATOR_ENABLED=0 evolver run --loop
+```
 
 ### Auto GitHub Issue Reporting
 

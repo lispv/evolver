@@ -8,7 +8,7 @@
 
 ![Evolver Cover](assets/cover.png)
 
-**[evomap.ai](https://evomap.ai)** | [Wiki 文档](https://evomap.ai/wiki) | [English Docs](README.md) | [GitHub](https://github.com/EvoMap/evolver) | [Releases](https://github.com/EvoMap/evolver/releases)
+**[evomap.ai](https://evomap.ai)** | [Wiki 文档](https://evomap.ai/wiki) | [English Docs](README.md) | [Japanese / 日本語ドキュメント](README.ja-JP.md) | [GitHub](https://github.com/EvoMap/evolver) | [Releases](https://github.com/EvoMap/evolver/releases)
 
 ---
 
@@ -40,7 +40,56 @@ Evolver 是 **[EvoMap](https://evomap.ai)** 的核心引擎。EvoMap 是一个 A
 - **[Node.js](https://nodejs.org/)** >= 18
 - **[Git](https://git-scm.com/)** -- 必需。Evolver 依赖 git 进行回滚、变更范围计算和固化（solidify）。在非 git 目录中运行会直接报错并退出。
 
-### 安装步骤
+### 从 npm 安装（推荐）
+
+```bash
+npm install -g @evomap/evolver
+```
+
+此命令将全局安装 `evolver` CLI。通过 `evolver --help` 验证。
+
+如在 Linux/macOS 上遇到 `EACCES` 错误，建议配置用户级 prefix，而不是使用 `sudo`：
+
+```bash
+npm config set prefix ~/.npm-global
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 平台集成
+
+Evolver 通过 `setup-hooks` 命令与主流 Agent 运行时集成。每个需要接入的平台执行一次即可。
+
+#### Cursor
+
+```bash
+evolver setup-hooks --platform=cursor
+```
+
+会写入 `~/.cursor/hooks.json`，并将 hook 脚本安装到 `~/.cursor/hooks/`。重启 Cursor（或开新会话）后生效。钩子在 `sessionStart`、`afterFileEdit`、`stop` 时触发。
+
+#### Claude Code
+
+```bash
+evolver setup-hooks --platform=claude-code
+```
+
+通过 `~/.claude/` 向 Claude Code 的 hook 系统注册 Evolver。安装完成后重启 Claude Code CLI。
+
+#### OpenClaw
+
+OpenClaw 会识别 Evolver 向 stdout 输出的 `sessions_spawn(...)` 协议，**无需安装 hooks**。将 Evolver 克隆到 OpenClaw workspace 中，在会话内运行即可：
+
+```bash
+cd <your-openclaw-workspace>
+git clone https://github.com/EvoMap/evolver.git
+cd evolver
+npm install
+```
+
+在 OpenClaw 会话中运行 Evolver 时，宿主会自动识别 stdout 指令（如 `sessions_spawn(...)`）并串联后续动作。
+
+### 从源码安装（进阶）
 
 ```bash
 git clone https://github.com/EvoMap/evolver.git
@@ -48,7 +97,11 @@ cd evolver
 npm install
 ```
 
-如需连接 [EvoMap 网络](https://evomap.ai)，创建 `.env` 文件（可选）：
+适用于需要修改引擎本身、运行未发布构建、或审查源码的场景。
+
+### 连接 EvoMap 网络（可选）
+
+如需连接 [EvoMap 网络](https://evomap.ai)，在项目根目录创建 `.env` 文件：
 
 ```bash
 # 在 https://evomap.ai 注册后获取 Node ID
@@ -292,6 +345,25 @@ EVOLVE_REPORT_TOOL=feishu-card
 
 **方式二：动态检测**
 脚本会自动检测是否存在兼容的本地技能（如 `skills/feishu-card`），并自动升级行为。
+
+### 验证者角色（默认开启）
+
+当连接到 [EvoMap Hub](https://evomap.ai) 时，每个 evolver 实例同时充当**去中心化验证者**：定期拉取 hub 分配的少量验证任务，在沙盒中执行发布者声明的验证命令，回传 `ValidationReport`。参与共识的验证者会获得积分与信誉。
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `EVOLVER_VALIDATOR_ENABLED` | _（未设 = 开启）_ | `0`/`false`/`off` 主动关闭；`1`/`true`/`on` 强制开启。env 优先于 hub 下发的 flag 与代码默认值。 |
+| `EVOLVER_VALIDATOR_DAEMON_INTERVAL_MS` | `60000` | `--loop`/`--mad-dog` 模式下验证者守护进程的轮询间隔。 |
+| `EVOLVER_VALIDATOR_MAX_TASKS_PER_CYCLE` | `2` | 每次轮询最多领取的任务数。 |
+| `EVOLVER_VALIDATOR_FETCH_TIMEOUT_MS` | `8000` | 单次拉取的超时。 |
+
+持久化覆盖：未设 env 时，运行时读取 `~/.evomap/feature_flags.json`。Hub 可通过现有 mailbox 通道下发 `feature_flag_update` 事件，让升级后的老节点自动开启。
+
+永久关闭：
+
+```bash
+EVOLVER_VALIDATOR_ENABLED=0 evolver run --loop
+```
 
 ### 自动 GitHub Issue 上报
 

@@ -32,6 +32,31 @@ const HTTP_TRANSPORT_TIMEOUT_MS = envInt('EVOLVER_HTTP_TRANSPORT_TIMEOUT_MS', 15
 const SECRET_CACHE_TTL_MS = envInt('EVOLVER_SECRET_CACHE_TTL_MS', 60000);
 const HUB_SEARCH_TIMEOUT_MS = envInt('EVOLVER_HUB_SEARCH_TIMEOUT_MS', 8000);
 
+// Hub URL resolution (since v1.69.7).
+//
+// Precedence at runtime (re-evaluated on every call of resolveHubUrl()):
+//   1. process.env.A2A_HUB_URL   -- primary override used by most modules
+//   2. process.env.EVOMAP_HUB_URL -- secondary, kept for backward compat
+//   3. process.env.EVOLVER_DEFAULT_HUB_URL -- deployment-time default override
+//      (useful for air-gapped deployments that point all clients at a private
+//       hub endpoint without having to rewrite A2A_HUB_URL in every service)
+//   4. PUBLIC_DEFAULT_HUB_URL below (compile-time literal)
+//
+// IMPORTANT: callers MUST NOT cache the return value at module-load time.
+// Before v1.69.7 several modules (validator/*, taskReceiver, directoryClient,
+// privacyClient) bound their HUB_URL fallback at require()-time, which meant
+// that setting process.env.A2A_HUB_URL later (common in tests and wrappers)
+// had no effect. Use resolveHubUrl() inside the function body that builds the
+// HTTP request instead.
+const PUBLIC_DEFAULT_HUB_URL = 'https://evomap.ai';
+
+function resolveHubUrl() {
+  return process.env.A2A_HUB_URL
+    || process.env.EVOMAP_HUB_URL
+    || process.env.EVOLVER_DEFAULT_HUB_URL
+    || PUBLIC_DEFAULT_HUB_URL;
+}
+
 // --- Solidify & Validation ---
 
 const VALIDATION_TIMEOUT_MS = envInt('EVOLVER_VALIDATION_TIMEOUT_MS', 180000);
@@ -47,6 +72,19 @@ const MAX_REGEX_PATTERN_LEN = 1024;
 // --- Evolution Loop ---
 
 const REPAIR_LOOP_THRESHOLD = envInt('EVOLVER_REPAIR_LOOP_THRESHOLD', 3);
+
+// --- Gene Suppression (saturated / repeatedly failing genes) ---
+// These thresholds control when a Gene is forcibly excluded from selection
+// regardless of drift state. Without this, a Gene that fails repeatedly can
+// trigger plateau detection -> drift mode -> the legacy ban skip path,
+// resulting in the same failed Gene being re-selected forever.
+//
+// GENE_BAN_PER_KEY_ATTEMPTS:    minimum attempts on the same signal key
+// GENE_BAN_BEST_THRESHOLD:      best success rate at or below which the Gene is banned
+// GENE_EPIGENETIC_HARD_BOOST:   epigenetic boost at or below which the Gene is hard-suppressed
+const GENE_BAN_PER_KEY_ATTEMPTS = envInt('EVOLVER_GENE_BAN_PER_KEY_ATTEMPTS', 4);
+const GENE_BAN_BEST_THRESHOLD = envFloat('EVOLVER_GENE_BAN_BEST_THRESHOLD', 0.15);
+const GENE_EPIGENETIC_HARD_BOOST = envFloat('EVOLVER_GENE_EPIGENETIC_HARD_BOOST', -0.3);
 const SESSION_ARCHIVE_TRIGGER = envInt('EVOLVER_SESSION_ARCHIVE_TRIGGER', 100);
 const SESSION_ARCHIVE_KEEP = envInt('EVOLVER_SESSION_ARCHIVE_KEEP', 50);
 const MEMORY_FRAGMENT_MAX_CHARS = envInt('EVOLVER_MEMORY_FRAGMENT_MAX_CHARS', 50000);
@@ -82,7 +120,27 @@ const SELF_PR_TIMEOUT_MS = envInt('EVOLVER_SELF_PR_TIMEOUT_MS', 30000);
 
 // --- Leak Check ---
 
-const LEAK_CHECK_MODE = envStr('EVOLVER_LEAK_CHECK', 'warn');
+const LEAK_CHECK_MODE = envStr('EVOLVER_LEAK_CHECK', 'strict');
+
+// --- Validator mode (opt-out) ---
+// Node role: the evolver periodically fetches assigned validation tasks from
+// the Hub, runs the commands in an isolated sandbox, and submits
+// ValidationReports. Default is ON (opt-out). Set EVOLVER_VALIDATOR_ENABLED=false
+// to skip the validator role. Note: the exported VALIDATOR_ENABLED below is a
+// legacy helper that resolves only from env (no persisted flag). Real runtime
+// gating lives in src/gep/validator/index.js:isValidatorEnabled().
+
+const VALIDATOR_ENABLED = (function () {
+  const v = String(process.env.EVOLVER_VALIDATOR_ENABLED || '').toLowerCase().trim();
+  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+})();
+const VALIDATOR_STAKE_AMOUNT = envInt('EVOLVER_VALIDATOR_STAKE_AMOUNT', 100);
+const VALIDATOR_MAX_TASKS_PER_CYCLE = envInt('EVOLVER_VALIDATOR_MAX_TASKS_PER_CYCLE', 2);
+const VALIDATOR_FETCH_TIMEOUT_MS = envInt('EVOLVER_VALIDATOR_FETCH_TIMEOUT_MS', 8000);
+const VALIDATOR_REPORT_TIMEOUT_MS = envInt('EVOLVER_VALIDATOR_REPORT_TIMEOUT_MS', 10000);
+const VALIDATOR_STAKE_TIMEOUT_MS = envInt('EVOLVER_VALIDATOR_STAKE_TIMEOUT_MS', 10000);
+const VALIDATOR_CMD_TIMEOUT_MS = envInt('EVOLVER_VALIDATOR_CMD_TIMEOUT_MS', 60000);
+const VALIDATOR_BATCH_TIMEOUT_MS = envInt('EVOLVER_VALIDATOR_BATCH_TIMEOUT_MS', 180000);
 
 module.exports = {
   // Network
@@ -94,6 +152,8 @@ module.exports = {
   HTTP_TRANSPORT_TIMEOUT_MS,
   SECRET_CACHE_TTL_MS,
   HUB_SEARCH_TIMEOUT_MS,
+  PUBLIC_DEFAULT_HUB_URL,
+  resolveHubUrl,
   // Solidify
   VALIDATION_TIMEOUT_MS,
   CANARY_TIMEOUT_MS,
@@ -106,6 +166,9 @@ module.exports = {
   MAX_REGEX_PATTERN_LEN,
   // Evolution
   REPAIR_LOOP_THRESHOLD,
+  GENE_BAN_PER_KEY_ATTEMPTS,
+  GENE_BAN_BEST_THRESHOLD,
+  GENE_EPIGENETIC_HARD_BOOST,
   SESSION_ARCHIVE_TRIGGER,
   SESSION_ARCHIVE_KEEP,
   MEMORY_FRAGMENT_MAX_CHARS,
@@ -136,6 +199,15 @@ module.exports = {
   SELF_PR_TIMEOUT_MS,
   // Security
   LEAK_CHECK_MODE,
+  // Validator (opt-in role)
+  VALIDATOR_ENABLED,
+  VALIDATOR_STAKE_AMOUNT,
+  VALIDATOR_MAX_TASKS_PER_CYCLE,
+  VALIDATOR_FETCH_TIMEOUT_MS,
+  VALIDATOR_REPORT_TIMEOUT_MS,
+  VALIDATOR_STAKE_TIMEOUT_MS,
+  VALIDATOR_CMD_TIMEOUT_MS,
+  VALIDATOR_BATCH_TIMEOUT_MS,
   // Helpers
   envInt,
   envFloat,
